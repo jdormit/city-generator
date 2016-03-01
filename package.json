@@ -4,6 +4,7 @@
   "description": "A twitter bot that generates city descriptions",
   "main": "index.js",
   "dependencies": {
+    "swagger-client": "^2.1.11",
     "twitter": "^1.2.5"
   },
   "devDependencies": {},
