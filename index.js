@@ -1,3 +1,5 @@
+var TWEET_INTERVAL_MINUTES = 30;
+
 var Twitter = require('twitter');
 var RestClient = require('node-rest-client').Client;
 var Chance = require('chance');
@@ -13,12 +15,6 @@ var client = new Twitter({
 var restClient = new RestClient();
 
 var chance = new Chance();
-
-function generateCityDescription() {
-	var city = GenerateCity(function(city) {
-		console.log(city);
-	});
-}
 
 var Wordnik = {
 	getCommonNoun : function(plural, callback) {
@@ -44,6 +40,57 @@ var Wordnik = {
 	}
 };
 
+setInterval(main, TWEET_INTERVAL_MINUTES * 60 * 1000);
+
+function main() {
+	generateCityDescription(function(desc){
+		client.post('statuses/update', {status: desc}, function(error, tweet, response) {
+			if (error) throw error;
+		});
+	});
+}
+
+function generateCityDescription(callback) {
+	var str = "An error occurred.";
+	var version = Math.floor((Math.random() * 7) + 1);
+	var city = GenerateCity(function(city) {
+		callback(makeDescription(city, version));
+	});
+}
+
+function makeDescription(city, version) {
+	var strlen = Number.MAX_VALUE;
+	while (strlen >= 140) {
+		switch(version) {
+			case 1:
+				str = "In " + city.adjective + " " + city.name + ", " + city.descriptor + ", " + city.clause + ".";
+				break;
+			case 2:
+				clause = city.clause.charAt(0).toUpperCase() + city.clause.substr(1, city.clause.length);
+				str = clause + " in " + city.name + ", the " + city.adjective + " " + city.descriptor + ".";
+				break;
+			case 3:
+				str = "In the " + city.adjective + " city of " + city.name + ", " + city.clause + ".";
+				break;
+			case 4:
+				str = city.name + " is the " + city.descriptor + ".";
+				break;
+			case 5:
+				str = "In " + city.name + ", " + city.clause + ".";
+				break;
+			case 6:
+				str = city.name + " is the " + city.adjective + " " + city.descriptor + ".";
+				break;
+			case 7:
+				str = "In " + city.adjective + " " + city.name + ", " + city.clause + ".";
+		}
+		str += "\n #imaginarycities #invisiblecities"
+		strlen = str.length;
+		version = Math.floor((Math.random() * 7) + 1);
+	}
+	return str;
+}
+
 function GenerateCity(callback) {
 	var city = {};
 	city.name = chance.city();
@@ -52,7 +99,10 @@ function GenerateCity(callback) {
 		city.descriptor = descriptor;
 		generateAdjective(function(adjective) {
 			city.adjective = adjective;
-			callback(city);
+			generateClause(function(clause){
+				city.clause = clause;
+				callback(city);
+			});
 		});
 	});
 };
@@ -82,24 +132,28 @@ function generateClause(callback) {
 	var numVerbs = Math.floor((Math.random() * 2) + 1);
 	Wordnik.getCommonNoun(true, function(noun1) {
 		Wordnik.getVerb(function(verb1) {
-			if (numNouns > 1) {
-				Wordnik.getCommonNoun(true, function(noun2) {
-					
+			if (numVerbs > 1) {
+				Wordnik.getVerb(function(verb2) {
+					if (numNouns > 1) {
+						Wordnik.getCommonNoun(true, function(noun2) {
+							callback(noun1 + " " + verb1 + " and " + noun2 + " " + verb2);
+						});
+					}
+					else {
+						callback(noun1 + " " + verb1 + " and " + verb2);
+					}
 				});
 			}
 			else {
-				
+				if (numNouns > 1) {
+					Wordnik.getCommonNoun(true, function(noun2) {
+						callback(noun1 + " and " + noun2 + " " + verb1);
+					});
+				}
+				else {
+					callback(noun1 + " " + verb1);
+				}
 			}
 		});
 	});
 }
-
-
-setInterval(generateCityDescription, 1000);
-
-/*
-City descriptions should be generated in the format "In the <adjective> city of <name>, <clause>", "<clause> in the the <adjective> city of <name>, or <name> a city of <description>"
-A clause looks like "<adjective><noun><verb><adjective><noun>"
-
-a city has a descriptor ("city of <blank> and <blank>"), an adjective, and a clause
-*/
