@@ -78,7 +78,20 @@ function generateAdjective(callback) {
 }
 
 function generateClause(callback) {
-	
+	var numNouns = Math.floor((Math.random() * 2) + 1);
+	var numVerbs = Math.floor((Math.random() * 2) + 1);
+	Wordnik.getCommonNoun(true, function(noun1) {
+		Wordnik.getVerb(function(verb1) {
+			if (numNouns > 1) {
+				Wordnik.getCommonNoun(true, function(noun2) {
+					
+				});
+			}
+			else {
+				
+			}
+		});
+	});
 }
 
 
