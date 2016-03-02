@@ -40,7 +40,7 @@ var Wordnik = {
 	}
 };
 
-setInterval(main, TWEET_INTERVAL_MINUTES * 60 * 1000);
+//setInterval(main, TWEET_INTERVAL_MINUTES * 60 * 1000);
 
 function main() {
 	generateCityDescription(function(desc){
@@ -49,6 +49,23 @@ function main() {
 		});
 	});
 }
+
+//streaming API for retweets
+client.stream('statuses/filter', {track: 'imaginarycities,imaginarycity,cityscape,cityscapes'}, function(stream) {
+	stream.on('data', function(tweet){
+		if (!(tweet.user.id_str === '704696544176386000')) { //do not retweet my own tweets
+			if (tweet.entities.media) { //only retweet pics
+				var status = {
+					status: 'A city imagined by @' + tweet.user.screen_name + '.\nhttp://twitter.com/' + tweet.user.id_str + "/status/" +
+						tweet.id_str
+				};
+				client.post('statuses/update', status, function(error, tweet, response) {
+					if (error) console.log(error);
+				});
+			}
+		}
+	});
+});
 
 function generateCityDescription(callback) {
 	var str = "An error occurred.";
