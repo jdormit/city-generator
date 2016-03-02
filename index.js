@@ -1,4 +1,7 @@
-var TWEET_INTERVAL_MINUTES = 30;
+var TWEET_INTERVAL_MINUTES = 20;
+var MAX_TWEET_QUOTES = 4;
+
+var numQuotes = 0; //tracks number of quotes per tweet interval
 
 var Twitter = require('twitter');
 var RestClient = require('node-rest-client').Client;
@@ -45,22 +48,24 @@ setInterval(main, TWEET_INTERVAL_MINUTES * 60 * 1000);
 function main() {
 	generateCityDescription(function(desc){
 		client.post('statuses/update', {status: desc}, function(error, tweet, response) {
-			if (error) throw error;
+			if (error) console.log(error);
 		});
 	});
+	numQuotes = 0; //reset numQuotes
 }
 
 //streaming API for retweets
 client.stream('statuses/filter', {track: 'imaginarycities,imaginarycity,cityscape,cityscapes'}, function(stream) {
 	stream.on('data', function(tweet){
 		if (!(tweet.user.id_str === '704696544176386000')) { //do not retweet my own tweets
-			if (tweet.entities.media) { //only retweet pics
+			if (tweet.entities.media && numQuotes < MAX_TWEET_QUOTES) { //only retweet pics and limit quotes per interval
 				var status = {
-					status: 'A city imagined by @' + tweet.user.screen_name + '.\nhttp://twitter.com/' + tweet.user.id_str + "/status/" +
+					status: 'A city imagined by ' + tweet.user.name + '.\nhttp://twitter.com/' + tweet.user.id_str + "/status/" +
 						tweet.id_str
 				};
 				client.post('statuses/update', status, function(error, tweet, response) {
 					if (error) console.log(error);
+					else numQuotes++;
 				});
 			}
 		}
