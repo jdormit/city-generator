@@ -40,7 +40,7 @@ var Wordnik = {
 	}
 };
 
-//setInterval(main, TWEET_INTERVAL_MINUTES * 60 * 1000);
+setInterval(main, TWEET_INTERVAL_MINUTES * 60 * 1000);
 
 function main() {
 	generateCityDescription(function(desc){
