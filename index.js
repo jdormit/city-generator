@@ -157,3 +157,5 @@ function generateClause(callback) {
 		});
 	});
 }
+
+console.log("running CityGenerator");
