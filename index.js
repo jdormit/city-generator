@@ -3,6 +3,8 @@ var MAX_TWEET_QUOTES = 4;
 
 var numQuotes = 0; //tracks number of quotes per tweet interval
 
+var quoteBuffer = []; //holds urls to avoid quoting the same retweet multiple times
+
 var Twitter = require('twitter');
 var RestClient = require('node-rest-client').Client;
 var Chance = require('chance');
@@ -52,6 +54,7 @@ function main() {
 		});
 	});
 	numQuotes = 0; //reset numQuotes
+	quoteBuffer = []; //reset quoteBuffer
 }
 
 //streaming API for retweets
@@ -59,14 +62,28 @@ client.stream('statuses/filter', {track: 'imaginarycities,imaginarycity,cityscap
 	stream.on('data', function(tweet){
 		if (!(tweet.user.id_str === '704696544176386000')) { //do not retweet my own tweets
 			if (tweet.entities.media && numQuotes < MAX_TWEET_QUOTES) { //only retweet pics and limit quotes per interval
+				var user, id;
+				if (tweet.quoted_status) {
+					user = tweet.quoted_status.user.name;
+					id = tweet.quoted_status_id;
+				}
+				else {
+					user = tweet.user.name;
+					id = tweet.id;
+				}
 				var status = {
-					status: 'A city imagined by ' + tweet.user.name + '.\nhttp://twitter.com/' + tweet.user.id_str + "/status/" +
+					status: 'A city imagined by ' + user + '.\nhttp://twitter.com/' + tweet.user.id_str + "/status/" +
 						tweet.id_str
 				};
-				client.post('statuses/update', status, function(error, tweet, response) {
-					if (error) console.log(error);
-					else numQuotes++;
-				});
+				if (quoteBuffer.indexOf(id) === -1) {
+					client.post('statuses/update', status, function(error, tweet, response) {
+						if (error) console.log(error);
+						else {
+							numQuotes++;
+							quoteBuffer.push(id);
+						}
+					});
+				}
 			}
 		}
 	});
