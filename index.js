@@ -62,18 +62,20 @@ client.stream('statuses/filter', {track: 'imaginarycities,imaginarycity,cityscap
 	stream.on('data', function(tweet){
 		if (!(tweet.user.id_str === '704696544176386000')) { //do not retweet my own tweets
 			if (tweet.entities.media && numQuotes < MAX_TWEET_QUOTES) { //only retweet pics and limit quotes per interval
-				var user, id;
+				var user, id, user_id
 				if (tweet.quoted_status) {
 					user = tweet.quoted_status.user.name;
-					id = tweet.quoted_status_id;
+					user_id = tweet.quotes_stats.user.id_str;
+					id = tweet.quoted_status_id_str;
 				}
 				else {
 					user = tweet.user.name;
-					id = tweet.id;
+					user_id = tweet.user.id_str
+					id = tweet.id_str;
 				}
 				var status = {
-					status: 'A city imagined by ' + user + '.\nhttp://twitter.com/' + tweet.user.id_str + "/status/" +
-						tweet.id_str
+					status: 'A city imagined by ' + user + '.\nhttp://twitter.com/' + user_id + "/status/" +
+						id
 				};
 				if (quoteBuffer.indexOf(id) === -1) {
 					client.post('statuses/update', status, function(error, tweet, response) {
