@@ -61,11 +61,16 @@ function main() {
 client.stream('statuses/filter', {track: 'imaginarycities,imaginarycity,cityscape,cityscapes'}, function(stream) {
 	stream.on('data', function(tweet){
 		if (!(tweet.user.id_str === '704696544176386000')) { //do not retweet my own tweets
-			if (tweet.entities.media && numQuotes < MAX_TWEET_QUOTES && !tweet.quoted_status) { //only retweet pics and limit quotes per interval
+			if (tweet.entities.media && numQuotes < MAX_TWEET_QUOTES) { //only retweet pics and limit quotes per interval
 				var user, id, user_id
-				if (tweet.quoted_status) {
+				if (tweet.retweeted_status) {
+					user = tweet.retweeted_status.user.name;
+					user_id = tweet.retweeted_status.user.id_str;
+					id = tweet.retweeted_status.id_str;
+				}
+				else if (tweet.quoted_status) {
 					user = tweet.quoted_status.user.name;
-					user_id = tweet.quotes_stats.user.id_str;
+					user_id = tweet.quotes_status.user.id_str;
 					id = tweet.quoted_status_id_str;
 				}
 				else {
