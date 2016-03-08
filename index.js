@@ -61,7 +61,7 @@ function main() {
 client.stream('statuses/filter', {track: 'imaginarycities,imaginarycity,cityscape,cityscapes'}, function(stream) {
 	stream.on('data', function(tweet){
 		if (!(tweet.user.id_str === '704696544176386000')) { //do not retweet my own tweets
-			if (tweet.entities.media && numQuotes < MAX_TWEET_QUOTES) { //only retweet pics and limit quotes per interval
+			if (tweet.entities.media && numQuotes < MAX_TWEET_QUOTES && !tweet.quoted_status) { //only retweet pics and limit quotes per interval
 				var user, id, user_id
 				if (tweet.quoted_status) {
 					user = tweet.quoted_status.user.name;
