@@ -55,6 +55,7 @@ function main() {
 	});
 	numQuotes = 0; //reset numQuotes
 	quoteBuffer = []; //reset quoteBuffer
+	console.log(new Date().toLocaleString() + " quoteBuffer and numQuotes reset");
 }
 
 //streaming API for retweets
@@ -88,6 +89,8 @@ client.stream('statuses/filter', {track: 'imaginarycities,imaginarycity,cityscap
 						else {
 							numQuotes++;
 							quoteBuffer.push(id);
+							console.log(new Date().toLocaleString() + " numQuotes: " + numQuotes);
+							console.log(new Date().toLocaleString() + " quotebuffer: " + quoteBuffer);
 						}
 					});
 				}
